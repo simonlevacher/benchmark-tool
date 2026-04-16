@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { analyze, ScrapeData, Report } from "@/lib/ai-providers";
 
 export const dynamic = "force-dynamic";
@@ -72,6 +72,17 @@ const MOCK_REPORT: Report = {
   },
 };
 
+// ─── SSE helpers ─────────────────────────────────────────────────────────────
+
+type SSEEvent =
+  | { type: "step"; id: string; status: "active" | "done" | "error"; message: string }
+  | { type: "done"; url: string; report: Report; usedFallback: boolean }
+  | { type: "error"; message: string };
+
+function encode(event: SSEEvent): Uint8Array {
+  return new TextEncoder().encode(`data: ${JSON.stringify(event)}\n\n`);
+}
+
 // ─── Route ────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
@@ -80,44 +91,77 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Body JSON invalide." }, { status: 400 });
+    return new Response(`data: ${JSON.stringify({ type: "error", message: "Body JSON invalide." })}\n\n`, {
+      headers: { "Content-Type": "text/event-stream" },
+    });
   }
 
   const { url } = body;
 
   if (!url || typeof url !== "string") {
-    return NextResponse.json({ error: "Champ 'url' manquant." }, { status: 400 });
+    return new Response(`data: ${JSON.stringify({ type: "error", message: "Champ 'url' manquant." })}\n\n`, {
+      headers: { "Content-Type": "text/event-stream" },
+    });
   }
 
-  // 1. Scrape
-  const scrapeRes = await fetch(new URL("/api/scrape", req.url).toString(), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url }),
-    cache: "no-store",
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (event: SSEEvent) => controller.enqueue(encode(event));
+
+      try {
+        // Étape 1 : scraping
+        send({ type: "step", id: "scraping", status: "active", message: "Récupération du contenu…" });
+
+        const scrapeRes = await fetch(new URL("/api/scrape", req.url).toString(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+          cache: "no-store",
+        });
+
+        if (!scrapeRes.ok) {
+          const err = await scrapeRes.json();
+          send({ type: "step", id: "scraping", status: "error", message: err.error ?? "Échec de la récupération du site." });
+          send({ type: "error", message: err.error ?? "Échec de la récupération du site." });
+          controller.close();
+          return;
+        }
+
+        const scrapeData: ScrapeData = await scrapeRes.json();
+        send({ type: "step", id: "scraping", status: "done", message: "Contenu récupéré" });
+
+        // Étape 2 : analyse IA
+        send({ type: "step", id: "analyzing", status: "active", message: "Analyse IA en cours…" });
+
+        let report: Report;
+        let usedFallback = false;
+
+        try {
+          report = await analyze(scrapeData);
+        } catch (err) {
+          console.error("[analyze] Erreur IA, fallback mock :", err);
+          report = MOCK_REPORT;
+          usedFallback = true;
+        }
+
+        send({ type: "step", id: "analyzing", status: "done", message: "Analyse terminée" });
+
+        // Résultat final
+        send({ type: "done", url, report, usedFallback });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Erreur inattendue.";
+        send({ type: "error", message });
+      } finally {
+        controller.close();
+      }
+    },
   });
 
-  if (!scrapeRes.ok) {
-    const err = await scrapeRes.json();
-    return NextResponse.json(
-      { error: err.error ?? "Erreur lors du scraping." },
-      { status: scrapeRes.status }
-    );
-  }
-
-  const scrapeData: ScrapeData = await scrapeRes.json();
-
-  // 2. Analyse IA avec fallback sur le mock
-  let report: Report;
-  let usedFallback = false;
-
-  try {
-    report = await analyze(scrapeData);
-  } catch (err) {
-    console.error("[analyze] Erreur IA, fallback mock :", err);
-    report = MOCK_REPORT;
-    usedFallback = true;
-  }
-
-  return NextResponse.json({ url, report, usedFallback });
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
 }

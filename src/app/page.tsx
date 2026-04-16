@@ -151,17 +151,32 @@ function ReportView({ url, report }: { url: string; report: Report }) {
 // ─── Main App ─────────────────────────────────────────────────────────────────
 
 export default function Home() {
+  type StepStatus = "pending" | "active" | "done" | "error";
+  type Step = { id: string; message: string; status: StepStatus };
+
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [steps, setSteps] = useState<Step[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ url: string; report: Report } | null>(null);
   const [searchCount, setSearchCount] = useState(0);
+
+  function upsertStep(id: string, status: StepStatus, message: string) {
+    setSteps((prev) => {
+      const idx = prev.findIndex((s) => s.id === id);
+      if (idx === -1) return [...prev, { id, status, message }];
+      const next = [...prev];
+      next[idx] = { id, status, message };
+      return next;
+    });
+  }
 
   async function handleAnalyze() {
     if (!url.trim() || loading) return;
     setLoading(true);
     setError(null);
     setResult(null);
+    setSteps([]);
     setSearchCount((c) => c + 1);
 
     try {
@@ -171,12 +186,34 @@ export default function Home() {
         body: JSON.stringify({ url: url.trim() }),
       });
 
-      const data = await res.json();
+      if (!res.body) throw new Error("Pas de stream reçu.");
 
-      if (!res.ok) {
-        setError(data.error ?? "Une erreur est survenue.");
-      } else {
-        setResult(data);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() ?? "";
+
+        for (const part of parts) {
+          const line = part.trim();
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const event = JSON.parse(line.slice(6));
+            if (event.type === "step") {
+              upsertStep(event.id, event.status, event.message);
+            } else if (event.type === "done") {
+              setResult({ url: event.url, report: event.report });
+            } else if (event.type === "error") {
+              setError(event.message);
+            }
+          } catch {}
+        }
       }
     } catch {
       setError("Impossible de joindre le serveur.");
@@ -250,25 +287,47 @@ export default function Home() {
             )}
           </div>
 
-          {loading ? (
-            <div className="mt-16 flex flex-col items-start gap-4">
-              <div className="w-8 h-px bg-black animate-pulse" />
-              <p className="text-sm text-neutral-400 tracking-wide">
-                Scraping en cours…
-              </p>
-              <div className="flex gap-1.5 mt-1">
-                {[0, 1, 2].map((i) => (
-                  <span
-                    key={i}
-                    className="w-1 h-1 rounded-full bg-black animate-bounce"
-                    style={{ animationDelay: `${i * 0.15}s` }}
-                  />
-                ))}
-              </div>
+          {(loading || steps.length > 0) && !result && (
+            <div className="mt-12 flex flex-col gap-2">
+              {steps.map((step) => (
+                <div key={step.id} className="flex items-center gap-4">
+                  <div className="w-4 flex items-center justify-center shrink-0">
+                    {step.status === "active" && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
+                    )}
+                    {step.status === "done" && (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6l3 3 5-5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                    {step.status === "error" && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                    )}
+                  </div>
+                  <p className={`text-sm tracking-wide ${
+                    step.status === "active" ? "text-black" :
+                    step.status === "done" ? "text-neutral-400" :
+                    step.status === "error" ? "text-red-500" :
+                    "text-neutral-300"
+                  }`}>
+                    {step.message}
+                  </p>
+                </div>
+              ))}
+              {loading && steps.length === 0 && (
+                <div className="flex items-center gap-4">
+                  <div className="w-4 flex items-center justify-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
+                  </div>
+                  <p className="text-sm text-black tracking-wide">Initialisation…</p>
+                </div>
+              )}
             </div>
-          ) : result ? (
+          )}
+
+          {result && (
             <ReportView key={searchCount} url={result.url} report={result.report} />
-          ) : null}
+          )}
         </div>
       </main>
 
