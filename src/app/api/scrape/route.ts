@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
+
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   let body: { url?: string };
 

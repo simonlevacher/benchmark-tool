@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyze, ScrapeData, Report } from "@/lib/ai-providers";
 
+export const dynamic = "force-dynamic";
+
 // ─── Mock fallback ────────────────────────────────────────────────────────────
 
 const MOCK_REPORT: Report = {
@@ -92,6 +94,7 @@ export async function POST(req: NextRequest) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ url }),
+    cache: "no-store",
   });
 
   if (!scrapeRes.ok) {
