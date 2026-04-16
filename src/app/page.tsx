@@ -8,6 +8,13 @@ type Feature = {
   category: string;
 };
 
+type NewsItem = {
+  title: string;
+  url: string;
+  date: string;
+  source: string;
+};
+
 type Report = {
   company: {
     name: string;
@@ -24,12 +31,13 @@ type Report = {
     positioning: string;
     target_market: string;
   };
+  news: NewsItem[];
 };
 
 // ─── Report ───────────────────────────────────────────────────────────────────
 
 function ReportView({ url, report }: { url: string; report: Report }) {
-  const { company, features, analysis } = report;
+  const { company, features, analysis, news } = report;
 
   const categoryColors: Record<string, string> = {
     Recrutement: "bg-black text-white",
@@ -144,6 +152,42 @@ function ReportView({ url, report }: { url: string; report: Report }) {
           <p className="text-sm text-neutral-700 leading-relaxed">{analysis.target_market}</p>
         </div>
       </div>
+
+      {news && news.length > 0 && (
+        <>
+          <div className="w-full h-px bg-neutral-200" />
+          <div>
+            <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-6">
+              Actualités récentes — {news.length}
+            </p>
+            <div className="flex flex-col gap-px bg-neutral-200">
+              {news.map((item, i) => (
+                <a
+                  key={i}
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white px-6 py-5 flex items-start justify-between gap-6 hover:bg-neutral-50 transition-colors group"
+                >
+                  <div className="flex flex-col gap-1.5 min-w-0">
+                    <p className="text-sm font-medium group-hover:underline underline-offset-2 leading-snug">
+                      {item.title}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-neutral-400">{item.source}</span>
+                      <span className="text-neutral-200">—</span>
+                      <span className="text-xs text-neutral-400">{item.date}</span>
+                    </div>
+                  </div>
+                  <svg className="shrink-0 mt-0.5 text-neutral-300 group-hover:text-black transition-colors" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </a>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

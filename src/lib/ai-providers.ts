@@ -8,6 +8,13 @@ export type ScrapeData = {
   paragraphs: string[];
 };
 
+export type NewsItem = {
+  title: string;
+  url: string;
+  date: string;
+  source: string;
+};
+
 export type Report = {
   company: {
     name: string;
@@ -28,6 +35,7 @@ export type Report = {
     positioning: string;
     target_market: string;
   };
+  news: NewsItem[];
 };
 
 // ─── Prompt ───────────────────────────────────────────────────────────────────
@@ -53,9 +61,9 @@ ${paragraphs}
 
 ---
 
-Utilise Google Search pour trouver des informations récentes et précises sur cette entreprise : date de fondation, levées de fonds (montant, série, investisseurs), nombre d'employés, nombre de clients, actualités récentes, positionnement concurrentiel.
+Utilise Google Search pour trouver des informations récentes et précises sur cette entreprise : date de fondation, levées de fonds (montant, série, investisseurs), nombre d'employés, nombre de clients, actualités récentes (articles de presse, annonces, levées de fonds, partenariats, lancements produit des 12 derniers mois avec leurs URLs), positionnement concurrentiel.
 
-Ensuite, analyse ce site et retourne un objet JSON avec exactement cette structure. Si une information est vraiment introuvable, indique "Non divulgué".
+Ensuite, analyse ce site et retourne un objet JSON avec exactement cette structure. Si une information est vraiment introuvable, indique "Non divulgué". Pour les news, retourne uniquement des URLs réelles et vérifiables trouvées via Google Search.
 
 Réponds UNIQUEMENT avec le JSON brut, sans balises markdown, sans explications.
 
@@ -80,7 +88,15 @@ Réponds UNIQUEMENT avec le JSON brut, sans balises markdown, sans explications.
     "weaknesses": ["Point faible 1", "Point faible 2", "Point faible 3"],
     "positioning": "Paragraphe de 2-3 phrases sur le positionnement marché et le différenciateur principal",
     "target_market": "Paragraphe de 2-3 phrases sur le marché cible et les cas d'usage principaux"
-  }
+  },
+  "news": [
+    {
+      "title": "Titre de l'article",
+      "url": "https://url-reelle-de-l-article.com",
+      "date": "JJ/MM/AAAA ou 'Date inconnue'",
+      "source": "Nom du média ex: TechCrunch, Les Echos, Le Monde"
+    }
+  ]
 }`;
 }
 
