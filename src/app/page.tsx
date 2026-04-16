@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 
-const PASSWORD = "Hellowork2026!";
-
 type Feature = {
   name: string;
   description: string;
@@ -33,14 +31,30 @@ type Report = {
 function PasswordGate({ onAuth }: { onAuth: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  function handleLogin(e: React.SyntheticEvent) {
+  async function handleLogin(e: React.SyntheticEvent) {
     e.preventDefault();
-    if (password === PASSWORD) {
-      onAuth();
-    } else {
+    setLoading(true);
+    setError(false);
+
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      if (res.ok) {
+        onAuth();
+      } else {
+        setError(true);
+        setPassword("");
+      }
+    } catch {
       setError(true);
-      setPassword("");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -102,9 +116,10 @@ function PasswordGate({ onAuth }: { onAuth: () => void }) {
 
             <button
               type="submit"
-              className="w-full bg-black text-white text-xs font-medium tracking-[0.2em] uppercase py-3.5 hover:bg-neutral-800 transition-colors"
+              disabled={loading || !password}
+              className="w-full bg-black text-white text-xs font-medium tracking-[0.2em] uppercase py-3.5 hover:bg-neutral-800 transition-colors disabled:bg-neutral-300 disabled:cursor-not-allowed"
             >
-              Accéder
+              {loading ? "Vérification…" : "Accéder"}
             </button>
           </form>
         </div>
@@ -291,7 +306,10 @@ function App({ onLogout }: { onLogout: () => void }) {
           Benchmark Tool
         </span>
         <button
-          onClick={onLogout}
+          onClick={async () => {
+            await fetch("/api/auth", { method: "DELETE" });
+            onLogout();
+          }}
           className="text-xs text-neutral-400 tracking-widest uppercase hover:text-black transition-colors"
         >
           Déconnexion
