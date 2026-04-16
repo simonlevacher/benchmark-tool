@@ -287,47 +287,46 @@ export default function Home() {
             )}
           </div>
 
-          {(loading || steps.length > 0) && !result && (
+          {loading ? (
             <div className="mt-12 flex flex-col gap-2">
-              {steps.map((step) => (
-                <div key={step.id} className="flex items-center gap-4">
-                  <div className="w-4 flex items-center justify-center shrink-0">
-                    {step.status === "active" && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
-                    )}
-                    {step.status === "done" && (
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M2 6l3 3 5-5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                    {step.status === "error" && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                    )}
-                  </div>
-                  <p className={`text-sm tracking-wide ${
-                    step.status === "active" ? "text-black" :
-                    step.status === "done" ? "text-neutral-400" :
-                    step.status === "error" ? "text-red-500" :
-                    "text-neutral-300"
-                  }`}>
-                    {step.message}
-                  </p>
-                </div>
-              ))}
-              {loading && steps.length === 0 && (
+              {steps.length === 0 ? (
                 <div className="flex items-center gap-4">
                   <div className="w-4 flex items-center justify-center">
                     <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
                   </div>
                   <p className="text-sm text-black tracking-wide">Initialisation…</p>
                 </div>
+              ) : (
+                steps.map((step) => (
+                  <div key={step.id} className="flex items-center gap-4">
+                    <div className="w-4 flex items-center justify-center shrink-0">
+                      {step.status === "active" && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
+                      )}
+                      {step.status === "done" && (
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 6l3 3 5-5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                      {step.status === "error" && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                      )}
+                    </div>
+                    <p className={`text-sm tracking-wide ${
+                      step.status === "active" ? "text-black" :
+                      step.status === "done" ? "text-neutral-400" :
+                      step.status === "error" ? "text-red-500" :
+                      "text-neutral-300"
+                    }`}>
+                      {step.message}
+                    </p>
+                  </div>
+                ))
               )}
             </div>
-          )}
-
-          {result && (
+          ) : result ? (
             <ReportView key={searchCount} url={result.url} report={result.report} />
-          )}
+          ) : null}
         </div>
       </main>
 
