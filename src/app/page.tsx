@@ -26,108 +26,6 @@ type Report = {
   };
 };
 
-// ─── Password Gate ────────────────────────────────────────────────────────────
-
-function PasswordGate({ onAuth }: { onAuth: () => void }) {
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  async function handleLogin(e: React.SyntheticEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(false);
-
-    try {
-      const res = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-
-      if (res.ok) {
-        onAuth();
-      } else {
-        setError(true);
-        setPassword("");
-      }
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <header className="border-b border-black px-8 py-5 flex items-center justify-between">
-        <span className="text-xs font-medium tracking-[0.2em] uppercase">
-          Benchmark Tool
-        </span>
-        <span className="text-xs text-neutral-400 tracking-widest uppercase">
-          Accès restreint
-        </span>
-      </header>
-
-      <main className="flex-1 flex items-center justify-center px-8">
-        <div className="w-full max-w-sm">
-          <div className="mb-12">
-            <div className="w-8 h-px bg-black mb-8" />
-            <h1 className="text-2xl font-medium tracking-tight leading-tight mb-3">
-              Connexion
-            </h1>
-            <p className="text-sm text-neutral-500 leading-relaxed">
-              Cet outil est réservé à un usage interne.
-              <br />
-              Entrez le mot de passe pour continuer.
-            </p>
-          </div>
-
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="password"
-                className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500"
-              >
-                Mot de passe
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError(false);
-                }}
-                placeholder="••••••••••••"
-                autoFocus
-                className={`w-full border px-4 py-3 text-sm font-mono bg-white outline-none transition-colors placeholder:text-neutral-300 ${
-                  error
-                    ? "border-red-500"
-                    : "border-black focus:border-black"
-                }`}
-              />
-              {error && (
-                <p className="text-xs text-red-500 tracking-wide">
-                  Mot de passe incorrect.
-                </p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || !password}
-              className="w-full bg-black text-white text-xs font-medium tracking-[0.2em] uppercase py-3.5 hover:bg-neutral-800 transition-colors disabled:bg-neutral-300 disabled:cursor-not-allowed"
-            >
-              {loading ? "Vérification…" : "Accéder"}
-            </button>
-          </form>
-        </div>
-      </main>
-    </div>
-  );
-}
-
 // ─── Report ───────────────────────────────────────────────────────────────────
 
 function ReportView({ url, report }: { url: string; report: Report }) {
@@ -141,7 +39,6 @@ function ReportView({ url, report }: { url: string; report: Report }) {
 
   return (
     <div className="mt-16 w-full border-t border-black pt-12 flex flex-col gap-12">
-      {/* Header rapport */}
       <div className="flex items-start justify-between gap-8">
         <div>
           <p className="text-xs text-neutral-400 tracking-widest uppercase mb-2">
@@ -156,7 +53,6 @@ function ReportView({ url, report }: { url: string; report: Report }) {
         </div>
       </div>
 
-      {/* Company overview */}
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-[1fr_auto]">
         <div>
           <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-3">
@@ -178,10 +74,8 @@ function ReportView({ url, report }: { url: string; report: Report }) {
         </div>
       </div>
 
-      {/* Separator */}
       <div className="w-full h-px bg-neutral-200" />
 
-      {/* Features */}
       <div>
         <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-6">
           Fonctionnalités — {features.length}
@@ -205,12 +99,9 @@ function ReportView({ url, report }: { url: string; report: Report }) {
         </div>
       </div>
 
-      {/* Separator */}
       <div className="w-full h-px bg-neutral-200" />
 
-      {/* Analysis */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-        {/* Strengths */}
         <div>
           <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-4">
             Points forts
@@ -225,7 +116,6 @@ function ReportView({ url, report }: { url: string; report: Report }) {
           </ul>
         </div>
 
-        {/* Weaknesses */}
         <div>
           <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-4">
             Points faibles
@@ -240,7 +130,6 @@ function ReportView({ url, report }: { url: string; report: Report }) {
           </ul>
         </div>
 
-        {/* Positioning */}
         <div>
           <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-3">
             Positionnement
@@ -248,7 +137,6 @@ function ReportView({ url, report }: { url: string; report: Report }) {
           <p className="text-sm text-neutral-700 leading-relaxed">{analysis.positioning}</p>
         </div>
 
-        {/* Target market */}
         <div>
           <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-3">
             Marché cible
@@ -262,7 +150,7 @@ function ReportView({ url, report }: { url: string; report: Report }) {
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 
-function App({ onLogout }: { onLogout: () => void }) {
+export default function Home() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -301,24 +189,14 @@ function App({ onLogout }: { onLogout: () => void }) {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="border-b border-black px-8 py-5 flex items-center justify-between">
+      <header className="border-b border-black px-8 py-5">
         <span className="text-xs font-medium tracking-[0.2em] uppercase">
           Benchmark Tool
         </span>
-        <button
-          onClick={async () => {
-            await fetch("/api/auth", { method: "DELETE" });
-            onLogout();
-          }}
-          className="text-xs text-neutral-400 tracking-widest uppercase hover:text-black transition-colors"
-        >
-          Déconnexion
-        </button>
       </header>
 
       <main className="flex-1 px-8 py-24">
         <div className="w-full max-w-2xl mx-auto">
-          {/* Intro */}
           <div className="mb-16">
             <div className="w-8 h-px bg-black mb-8" />
             <h1 className="text-4xl font-medium tracking-tight leading-tight mb-5">
@@ -330,7 +208,6 @@ function App({ onLogout }: { onLogout: () => void }) {
             </p>
           </div>
 
-          {/* Input */}
           <div className="flex flex-col gap-3">
             <label
               htmlFor="url"
@@ -371,7 +248,6 @@ function App({ onLogout }: { onLogout: () => void }) {
             )}
           </div>
 
-          {/* Loader */}
           {loading && (
             <div className="mt-16 flex flex-col items-start gap-4">
               <div className="w-8 h-px bg-black animate-pulse" />
@@ -390,7 +266,6 @@ function App({ onLogout }: { onLogout: () => void }) {
             </div>
           )}
 
-          {/* Report */}
           {result && !loading && (
             <ReportView url={result.url} report={result.report} />
           )}
@@ -404,16 +279,4 @@ function App({ onLogout }: { onLogout: () => void }) {
       </footer>
     </div>
   );
-}
-
-// ─── Root ─────────────────────────────────────────────────────────────────────
-
-export default function Home() {
-  const [authenticated, setAuthenticated] = useState(false);
-
-  if (!authenticated) {
-    return <PasswordGate onAuth={() => setAuthenticated(true)} />;
-  }
-
-  return <App onLogout={() => setAuthenticated(false)} />;
 }

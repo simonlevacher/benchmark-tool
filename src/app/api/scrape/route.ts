@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
-import { isAuthenticated, unauthorized } from "@/lib/auth";
-
 export async function POST(req: NextRequest) {
-  if (!isAuthenticated(req)) return unauthorized();
   let body: { url?: string };
 
   try {
