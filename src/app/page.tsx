@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const PASSWORD = "benchmark2024";
+const PASSWORD = "Hellowork2026!";
 
 type Feature = {
   name: string;
