@@ -53,7 +53,9 @@ ${paragraphs}
 
 ---
 
-Analyse ce site et retourne un objet JSON avec exactement cette structure. Complète les informations manquantes (fondation, financement, nombre d'employés, clients) avec tes connaissances générales sur cette entreprise si tu la connais. Si tu ne sais pas, indique "Non divulgué".
+Utilise Google Search pour trouver des informations récentes et précises sur cette entreprise : date de fondation, levées de fonds (montant, série, investisseurs), nombre d'employés, nombre de clients, actualités récentes, positionnement concurrentiel.
+
+Ensuite, analyse ce site et retourne un objet JSON avec exactement cette structure. Si une information est vraiment introuvable, indique "Non divulgué".
 
 Réponds UNIQUEMENT avec le JSON brut, sans balises markdown, sans explications.
 
@@ -89,7 +91,10 @@ export async function analyzeWithGemini(data: ScrapeData): Promise<Report> {
   if (!apiKey) throw new Error("GEMINI_API_KEY non définie.");
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    tools: [{ googleSearch: {} }],
+  });
 
   const result = await model.generateContent(buildPrompt(data));
   const text = result.response.text().trim();
