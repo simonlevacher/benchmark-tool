@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyze, ScrapeData, Report } from "@/lib/ai-providers";
+import { isAuthenticated, unauthorized } from "@/lib/auth";
 
 // ─── Mock fallback ────────────────────────────────────────────────────────────
 
@@ -73,6 +74,8 @@ const MOCK_REPORT: Report = {
 // ─── Route ────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  if (!isAuthenticated(req)) return unauthorized();
+
   let body: { url?: string };
 
   try {
