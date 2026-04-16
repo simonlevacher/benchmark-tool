@@ -173,6 +173,8 @@ export default function Home() {
 
   async function handleAnalyze() {
     if (!url.trim() || loading) return;
+
+    const trimmedUrl = url.trim();
     setLoading(true);
     setError(null);
     setResult(null);
@@ -180,41 +182,44 @@ export default function Home() {
     setSearchCount((c) => c + 1);
 
     try {
-      const res = await fetch("/api/analyze", {
+      // Étape 1 : scraping
+      upsertStep("scraping", "active", "Récupération du contenu…");
+
+      const scrapeRes = await fetch("/api/scrape", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url.trim() }),
+        body: JSON.stringify({ url: trimmedUrl }),
       });
 
-      if (!res.body) throw new Error("Pas de stream reçu.");
+      const scrapeData = await scrapeRes.json();
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const parts = buffer.split("\n\n");
-        buffer = parts.pop() ?? "";
-
-        for (const part of parts) {
-          const line = part.trim();
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const event = JSON.parse(line.slice(6));
-            if (event.type === "step") {
-              upsertStep(event.id, event.status, event.message);
-            } else if (event.type === "done") {
-              setResult({ url: event.url, report: event.report });
-            } else if (event.type === "error") {
-              setError(event.message);
-            }
-          } catch {}
-        }
+      if (!scrapeRes.ok) {
+        upsertStep("scraping", "error", scrapeData.error ?? "Échec de la récupération.");
+        setError(scrapeData.error ?? "Échec de la récupération du site.");
+        return;
       }
+
+      upsertStep("scraping", "done", "Contenu récupéré");
+
+      // Étape 2 : analyse IA
+      upsertStep("analyzing", "active", "Analyse IA en cours…");
+
+      const analyzeRes = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scrapeData }),
+      });
+
+      const analyzeData = await analyzeRes.json();
+
+      if (!analyzeRes.ok) {
+        upsertStep("analyzing", "error", analyzeData.error ?? "Échec de l'analyse.");
+        setError(analyzeData.error ?? "Échec de l'analyse.");
+        return;
+      }
+
+      upsertStep("analyzing", "done", "Analyse terminée");
+      setResult({ url: trimmedUrl, report: analyzeData.report });
     } catch {
       setError("Impossible de joindre le serveur.");
     } finally {
