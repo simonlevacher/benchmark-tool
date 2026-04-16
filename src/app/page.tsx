@@ -155,12 +155,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ url: string; report: Report } | null>(null);
+  const [searchCount, setSearchCount] = useState(0);
 
   async function handleAnalyze() {
-    if (!url.trim()) return;
+    if (!url.trim() || loading) return;
     setLoading(true);
     setError(null);
     setResult(null);
+    setSearchCount((c) => c + 1);
 
     try {
       const res = await fetch("/api/analyze", {
@@ -248,7 +250,7 @@ export default function Home() {
             )}
           </div>
 
-          {loading && (
+          {loading ? (
             <div className="mt-16 flex flex-col items-start gap-4">
               <div className="w-8 h-px bg-black animate-pulse" />
               <p className="text-sm text-neutral-400 tracking-wide">
@@ -264,11 +266,9 @@ export default function Home() {
                 ))}
               </div>
             </div>
-          )}
-
-          {result && !loading && (
-            <ReportView url={result.url} report={result.report} />
-          )}
+          ) : result ? (
+            <ReportView key={searchCount} url={result.url} report={result.report} />
+          ) : null}
         </div>
       </main>
 
