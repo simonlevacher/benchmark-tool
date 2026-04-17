@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     if (!process.env.POSTGRES_URL) {
@@ -15,7 +15,8 @@ export async function GET(
       );
     }
 
-    const id = parseInt(params.id, 10);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr, 10);
 
     if (isNaN(id)) {
       return NextResponse.json(

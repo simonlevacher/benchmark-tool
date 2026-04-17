@@ -81,26 +81,36 @@ export default function HistoryPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="border-b border-black px-8 py-5 flex items-center justify-between">
-        <span className="text-xs font-medium tracking-[0.2em] uppercase">
-          Benchmark Tool
-        </span>
-        <a
-          href="/"
-          className="text-xs font-medium tracking-[0.2em] uppercase hover:text-neutral-600 transition-colors"
-        >
-          Retour
-        </a>
+      <header className="border-b border-black">
+        <div className="px-8 py-5 border-b border-neutral-200">
+          <span className="text-xs font-medium tracking-[0.2em] uppercase">
+            Benchmark Tool
+          </span>
+        </div>
+        <nav className="px-8 flex gap-8">
+          <a
+            href="/"
+            className="py-4 px-2 text-xs font-medium tracking-[0.15em] uppercase border-b-2 border-transparent text-neutral-500 hover:text-black hover:border-neutral-300 transition-colors"
+          >
+            Nouveau benchmark
+          </a>
+          <a
+            href="/history"
+            className="py-4 px-2 text-xs font-semibold tracking-[0.15em] uppercase border-b-2 border-black bg-neutral-100 text-black transition-colors"
+          >
+            Précédents benchmarks
+          </a>
+        </nav>
       </header>
 
       <main className="flex-1 px-8 py-24">
         <div className="w-full max-w-3xl mx-auto">
-          <div className="mb-12">
+          <div className="mb-16">
             <div className="w-8 h-px bg-black mb-8" />
-            <h1 className="text-3xl font-medium tracking-tight mb-5">
+            <h1 className="text-4xl font-medium tracking-tight leading-tight mb-5">
               Historique des analyses
             </h1>
-            <p className="text-sm text-neutral-500 leading-relaxed">
+            <p className="text-base text-neutral-500 leading-relaxed max-w-lg">
               Consultez vos rapports d'analyse précédents ou relancez une
               analyse pour obtenir les dernières données.
             </p>

@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Report } from "@/lib/db";
-import { ReportView } from "@/app/_components/report-view";
+import { ReportView, type Report } from "@/app/_components/report-view";
 
 type StoredReport = {
   id: number;
@@ -13,7 +12,7 @@ type StoredReport = {
   created_at: Date | string;
 };
 
-export default function ReportPage({ params }: { params: { id: string } }) {
+export default function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [storedReport, setStoredReport] = useState<StoredReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,7 +21,8 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     async function fetchReport() {
       try {
-        const res = await fetch(`/api/reports/${params.id}`);
+        const { id } = await params;
+        const res = await fetch(`/api/reports/${id}`);
 
         if (!res.ok) {
           const data = await res.json();
@@ -41,15 +41,31 @@ export default function ReportPage({ params }: { params: { id: string } }) {
     }
 
     fetchReport();
-  }, [params.id]);
+  }, [params]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col">
-        <header className="border-b border-black px-8 py-5">
-          <span className="text-xs font-medium tracking-[0.2em] uppercase">
-            Benchmark Tool
-          </span>
+        <header className="border-b border-black">
+          <div className="px-8 py-5 border-b border-neutral-200">
+            <span className="text-xs font-medium tracking-[0.2em] uppercase">
+              Benchmark Tool
+            </span>
+          </div>
+          <nav className="px-8 flex gap-8">
+            <a
+              href="/"
+              className="py-4 px-2 text-xs font-medium tracking-[0.15em] uppercase border-b-2 border-transparent text-neutral-500 hover:text-black hover:border-neutral-300 transition-colors"
+            >
+              Nouveau benchmark
+            </a>
+            <a
+              href="/history"
+              className="py-4 px-2 text-xs font-semibold tracking-[0.15em] uppercase border-b-2 border-black bg-neutral-100 text-black transition-colors"
+            >
+              Précédents benchmarks
+            </a>
+          </nav>
         </header>
         <main className="flex-1 px-8 py-24 flex items-center justify-center">
           <div className="flex items-center gap-4">
@@ -68,10 +84,26 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   if (error || !storedReport) {
     return (
       <div className="min-h-screen bg-white flex flex-col">
-        <header className="border-b border-black px-8 py-5">
-          <span className="text-xs font-medium tracking-[0.2em] uppercase">
-            Benchmark Tool
-          </span>
+        <header className="border-b border-black">
+          <div className="px-8 py-5 border-b border-neutral-200">
+            <span className="text-xs font-medium tracking-[0.2em] uppercase">
+              Benchmark Tool
+            </span>
+          </div>
+          <nav className="px-8 flex gap-8">
+            <a
+              href="/"
+              className="py-4 px-2 text-xs font-medium tracking-[0.15em] uppercase border-b-2 border-transparent text-neutral-500 hover:text-black hover:border-neutral-300 transition-colors"
+            >
+              Nouveau benchmark
+            </a>
+            <a
+              href="/history"
+              className="py-4 px-2 text-xs font-semibold tracking-[0.15em] uppercase border-b-2 border-black bg-neutral-100 text-black transition-colors"
+            >
+              Précédents benchmarks
+            </a>
+          </nav>
         </header>
         <main className="flex-1 px-8 py-24">
           <div className="w-full max-w-2xl mx-auto">
@@ -90,16 +122,26 @@ export default function ReportPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="border-b border-black px-8 py-5 flex items-center justify-between">
-        <span className="text-xs font-medium tracking-[0.2em] uppercase">
-          Benchmark Tool
-        </span>
-        <button
-          onClick={() => router.push("/history")}
-          className="text-xs font-medium tracking-[0.2em] uppercase hover:text-neutral-600 transition-colors"
-        >
-          Historique
-        </button>
+      <header className="border-b border-black">
+        <div className="px-8 py-5 border-b border-neutral-200">
+          <span className="text-xs font-medium tracking-[0.2em] uppercase">
+            Benchmark Tool
+          </span>
+        </div>
+        <nav className="px-8 flex gap-8">
+          <a
+            href="/"
+            className="py-4 px-2 text-xs font-medium tracking-[0.15em] uppercase border-b-2 border-transparent text-neutral-500 hover:text-black hover:border-neutral-300 transition-colors"
+          >
+            Nouveau benchmark
+          </a>
+          <a
+            href="/history"
+            className="py-4 px-2 text-xs font-semibold tracking-[0.15em] uppercase border-b-2 border-black bg-neutral-100 text-black transition-colors"
+          >
+            Précédents benchmarks
+          </a>
+        </nav>
       </header>
 
       <main className="flex-1 px-8 py-24">
