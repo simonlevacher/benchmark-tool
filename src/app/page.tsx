@@ -1,6 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+
+function ClampedText({ value }: { value: string }) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const [truncated, setTruncated] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => setTruncated(el.scrollHeight > el.clientHeight + 1);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [value]);
+
+  useEffect(() => {
+    const onResize = () => {
+      const el = ref.current;
+      if (el) setTruncated(el.scrollHeight > el.clientHeight + 1);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  return (
+    <div className="relative group">
+      <p
+        ref={ref}
+        className="text-sm font-medium leading-relaxed break-words whitespace-pre-line line-clamp-3 cursor-default"
+      >
+        {value}
+      </p>
+      {truncated && (
+        <div className="pointer-events-none absolute left-0 right-0 top-full mt-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs leading-relaxed p-3 shadow-lg whitespace-pre-line break-words">
+          {value}
+        </div>
+      )}
+    </div>
+  );
+}
 
 type Feature = {
   name: string;
@@ -22,7 +63,10 @@ type Report = {
     founded: string;
     employees: string;
     funding: string;
+    ebitda: string;
     clients: string;
+    funding_history: { year: string; round: string; amount: string; investors: string }[];
+    revenue_history: { year: string; revenue: number | null; label: string }[];
   };
   features: Feature[];
   analysis: {
@@ -55,31 +99,100 @@ function ReportView({ url, report }: { url: string; report: Report }) {
           <h2 className="text-3xl font-medium tracking-tight">{company.name}</h2>
           <p className="text-sm text-neutral-400 font-mono mt-1 break-all">{url}</p>
         </div>
-        <div className="shrink-0 text-right">
-          <p className="text-xs text-neutral-400 tracking-widest uppercase mb-1">Fondée</p>
-          <p className="text-sm font-medium">{company.founded}</p>
-        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-[1fr_auto]">
+      <div className="flex flex-col gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-neutral-200 items-stretch">
+          {[
+            { label: "Fondée", value: company.founded },
+            { label: "Employés", value: company.employees },
+            { label: "EBITDA", value: company.ebitda },
+            { label: "Clients", value: company.clients },
+          ].map(({ label, value }) => (
+            <div key={label} className="bg-white p-4 min-w-0 h-32 flex flex-col">
+              <p className="text-xs text-neutral-400 tracking-widest uppercase mb-1">{label}</p>
+              <div className="flex-1 min-w-0">
+                <ClampedText value={value} />
+              </div>
+            </div>
+          ))}
+        </div>
         <div>
           <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-3">
             Description
           </p>
           <p className="text-sm text-neutral-700 leading-relaxed">{company.description}</p>
         </div>
-        <div className="flex flex-col gap-4 sm:items-end sm:text-right min-w-40">
-          {[
-            { label: "Employés", value: company.employees },
-            { label: "Financement", value: company.funding },
-            { label: "Clients", value: company.clients },
-          ].map(({ label, value }) => (
-            <div key={label}>
-              <p className="text-xs text-neutral-400 tracking-widest uppercase mb-0.5">{label}</p>
-              <p className="text-sm font-medium">{value}</p>
-            </div>
-          ))}
-        </div>
+      </div>
+
+      <div className="w-full h-px bg-neutral-200" />
+
+      <div>
+        <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-6">
+          Historique de financement
+        </p>
+        {company.funding_history.length > 0 ? (
+          <div className="flex flex-col gap-4">
+            {company.funding_history.map((fund, i) => (
+              <div key={i} className="flex items-start gap-4">
+                <div className="flex flex-col items-center gap-3 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center flex-shrink-0" />
+                  {i < company.funding_history.length - 1 && (
+                    <div className="w-px h-8 bg-neutral-200" />
+                  )}
+                </div>
+                <div className="flex-1 pb-2">
+                  <div className="flex items-baseline gap-3 mb-1">
+                    <p className="text-sm font-medium">{fund.round}</p>
+                    <p className="text-xs text-neutral-400">{fund.year}</p>
+                  </div>
+                  <p className="text-sm text-neutral-700 mb-1">{fund.amount}</p>
+                  <p className="text-xs text-neutral-500">{fund.investors}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-neutral-400">Pas d'information disponible</p>
+        )}
+      </div>
+
+      <div className="w-full h-px bg-neutral-200" />
+
+      <div>
+        <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-6">
+          Évolution du chiffre d'affaires
+        </p>
+        {company.revenue_history.length > 0 ? (
+          <div className="w-full h-64 bg-white border border-neutral-200 p-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={company.revenue_history} margin={{ top: 10, right: 30, left: 0, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="year" stroke="#999" style={{ fontSize: "12px" }} />
+                <YAxis stroke="#999" style={{ fontSize: "12px" }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                  }}
+                  formatter={(value) => (value !== null ? `${value}M€` : "Non disponible")}
+                  labelFormatter={(label) => `${label}`}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#000"
+                  fill="#f0f0f0"
+                  strokeWidth={2}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <p className="text-sm text-neutral-400">Pas d'information disponible</p>
+        )}
       </div>
 
       <div className="w-full h-px bg-neutral-200" />

@@ -22,7 +22,10 @@ export type Report = {
     founded: string;
     employees: string;
     funding: string;
+    ebitda: string;
     clients: string;
+    funding_history: { year: string; round: string; amount: string; investors: string }[];
+    revenue_history: { year: string; revenue: number | null; label: string }[];
   };
   features: {
     name: string;
@@ -61,11 +64,19 @@ ${paragraphs}
 
 ---
 
-Utilise Google Search pour trouver des informations récentes et précises sur cette entreprise : date de fondation, levées de fonds (montant, série, investisseurs), nombre d'employés, nombre de clients, actualités récentes (articles de presse, annonces, levées de fonds, partenariats, lancements produit des 12 derniers mois avec leurs URLs), positionnement concurrentiel.
+Utilise Google Search pour trouver des informations récentes et précises sur cette entreprise :
+- Date de fondation
+- Historique complet de financement : TOUS les tours (Seed, Série A, B, C, D, etc.) avec année, montant exact, et noms des investisseurs principaux, classés chronologiquement du plus ancien au plus récent
+- Nombre d'employés
+- EBITDA ou chiffre d'affaires estimé
+- Chiffre d'affaires/revenu annuels des dernières années disponibles
+- Nombre de clients
+- Actualités récentes (articles de presse, annonces, levées de fonds, partenariats, lancements produit des 12 derniers mois avec leurs URLs)
+- Positionnement concurrentiel
 
 Ensuite, analyse ce site et retourne un objet JSON avec exactement cette structure. Si une information est vraiment introuvable, indique "Non divulgué". Pour les news, retourne uniquement des URLs réelles et vérifiables trouvées via Google Search.
 
-Réponds UNIQUEMENT avec le JSON brut, sans balises markdown, sans explications.
+Réponds UNIQUEMENT avec le JSON brut, sans balises markdown, sans explications. Toutes les valeurs textuelles doivent être en français.
 
 {
   "company": {
@@ -74,7 +85,40 @@ Réponds UNIQUEMENT avec le JSON brut, sans balises markdown, sans explications.
     "founded": "Année de fondation ou 'Non divulgué'",
     "employees": "Fourchette ex: 50-100 ou 'Non divulgué'",
     "funding": "Montant et série ex: 'Série A — 5M€' ou 'Bootstrapped' ou 'Non divulgué'",
-    "clients": "Nombre ou profil de clients ex: '5 000+ entreprises'"
+    "ebitda": "EBITDA ou revenu estimé ex: '10M€' ou 'Non divulgué'",
+    "clients": "Nombre ou profil de clients ex: '5 000+ entreprises'",
+    "funding_history": [
+      {
+        "year": "2020",
+        "round": "Seed",
+        "amount": "1M€",
+        "investors": "Kima Ventures"
+      },
+      {
+        "year": "2021",
+        "round": "Série A",
+        "amount": "5M€",
+        "investors": "Sequoia Capital, Y Combinator"
+      },
+      {
+        "year": "2023",
+        "round": "Série B",
+        "amount": "25M€",
+        "investors": "Andreessen Horowitz, Bedrock Capital"
+      }
+    ],
+    "revenue_history": [
+      {
+        "year": "2022",
+        "revenue": 3,
+        "label": "3M€"
+      },
+      {
+        "year": "2023",
+        "revenue": 8,
+        "label": "8M€"
+      }
+    ]
   },
   "features": [
     {
