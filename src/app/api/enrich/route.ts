@@ -30,31 +30,50 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const searchUrl = new URL("https://recherche-entreprises.api.gouv.fr/search");
-    searchUrl.searchParams.set("q", companyName);
-    searchUrl.searchParams.set("page", "1");
-    searchUrl.searchParams.set("per_page", "1");
+    // Clean company name: extract first part before pipe, dash, or special chars
+    let cleanName = companyName
+      .split("|")[0]
+      .split("-")[0]
+      .trim()
+      .replace(/\s*\(.*?\)\s*/g, ""); // Remove parentheses content
 
-    const response = await fetch(searchUrl.toString(), {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-      },
-      signal: AbortSignal.timeout(5_000),
-    });
+    // Try multiple search strategies
+    const searchVariations = [
+      cleanName, // original
+      cleanName.toUpperCase(), // uppercase
+      cleanName.toLowerCase(), // lowercase
+      cleanName.split(" ")[0], // first word only
+    ];
 
-    if (!response.ok) {
-      return NextResponse.json({ found: false } as DatagouvResult);
+    let company: any = null;
+
+    for (const query of searchVariations) {
+      const searchUrl = new URL("https://recherche-entreprises.api.gouv.fr/search");
+      searchUrl.searchParams.set("q", query);
+      searchUrl.searchParams.set("page", "1");
+      searchUrl.searchParams.set("per_page", "1");
+
+      const response = await fetch(searchUrl.toString(), {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        },
+        signal: AbortSignal.timeout(5_000),
+      });
+
+      if (response.ok) {
+        const data = await response.json() as any;
+        const results = data.results || [];
+        if (results.length > 0) {
+          company = results[0];
+          break; // Found a match, stop searching
+        }
+      }
     }
 
-    const data = await response.json() as any;
-    const results = data.results || [];
-
-    if (!results.length) {
+    if (!company) {
       return NextResponse.json({ found: false } as DatagouvResult);
     }
-
-    const company = results[0];
 
     // Extract dirigeants (limited to first 3)
     const dirigeants: string[] = [];
