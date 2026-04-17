@@ -197,6 +197,69 @@ function ReportView({ url, report }: { url: string; report: Report }) {
 
       <div className="w-full h-px bg-neutral-200" />
 
+      {company.siren && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div>
+              <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-3">
+                Données officielles (data.gouv.fr)
+              </p>
+              <div className="text-sm text-neutral-700 space-y-2">
+                {company.siren && (
+                  <div>
+                    <p className="text-xs text-neutral-400 tracking-widest uppercase mb-0.5">
+                      SIREN
+                    </p>
+                    <p className="font-mono">{company.siren}</p>
+                  </div>
+                )}
+                {company.siret && (
+                  <div>
+                    <p className="text-xs text-neutral-400 tracking-widest uppercase mb-0.5">
+                      SIRET
+                    </p>
+                    <p className="font-mono">{company.siret}</p>
+                  </div>
+                )}
+                {company.forme_juridique && (
+                  <div>
+                    <p className="text-xs text-neutral-400 tracking-widest uppercase mb-0.5">
+                      Forme juridique
+                    </p>
+                    <p>{company.forme_juridique}</p>
+                  </div>
+                )}
+                {company.naf && (
+                  <div>
+                    <p className="text-xs text-neutral-400 tracking-widest uppercase mb-0.5">
+                      Activité principale
+                    </p>
+                    <p>{company.naf}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            {company.dirigeants && company.dirigeants.length > 0 && (
+              <div>
+                <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-3">
+                  Dirigeants
+                </p>
+                <ul className="flex flex-col gap-2 text-sm text-neutral-700">
+                  {company.dirigeants.map((d, i) => (
+                    <li key={i} className="flex gap-2">
+                      <span className="mt-1 w-1 h-1 rounded-full bg-black shrink-0" />
+                      {d}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="w-full h-px bg-neutral-200" />
+        </>
+      )}
+
       <div>
         <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-6">
           Fonctionnalités — {features.length}
@@ -357,6 +420,33 @@ export default function Home() {
       }
 
       upsertStep("scraping", "done", "Contenu récupéré");
+
+      // Étape 1.5 : enrichissement datagouv (optionnel, ne bloque pas)
+      upsertStep("enrich", "active", "Recherche de données officielles…");
+
+      try {
+        const companyName = scrapeData.title || "unknown";
+        const enrichRes = await fetch("/api/enrich", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ companyName }),
+          signal: AbortSignal.timeout(5_000),
+        });
+
+        if (enrichRes.ok) {
+          const datagouv = await enrichRes.json();
+          if (datagouv.found) {
+            scrapeData.datagouv = datagouv;
+            upsertStep("enrich", "done", "Données officielles trouvées");
+          } else {
+            upsertStep("enrich", "done", "Pas de données officielles");
+          }
+        } else {
+          upsertStep("enrich", "done", "Données officielles indisponibles");
+        }
+      } catch {
+        upsertStep("enrich", "done", "Enrichissement ignoré");
+      }
 
       // Étape 2 : analyse IA
       upsertStep("analyzing", "active", "Analyse IA en cours…");

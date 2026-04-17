@@ -6,6 +6,19 @@ export type ScrapeData = {
   metaDescription: string | null;
   headings: { level: string; text: string }[];
   paragraphs: string[];
+  datagouv?: {
+    found: boolean;
+    siren?: string;
+    siret_siege?: string;
+    date_creation?: string;
+    effectif?: string;
+    forme_juridique?: string;
+    naf_code?: string;
+    naf_libelle?: string;
+    adresse?: string;
+    dirigeants?: string[];
+    certifications?: string[];
+  };
 };
 
 export type NewsItem = {
@@ -26,6 +39,11 @@ export type Report = {
     clients: string;
     funding_history: { year: string; round: string; amount: string; investors: string }[];
     revenue_history: { year: string; revenue: number | null; label: string }[];
+    siren?: string;
+    siret?: string;
+    dirigeants?: string[];
+    forme_juridique?: string;
+    naf?: string;
   };
   features: {
     name: string;
@@ -49,6 +67,21 @@ export function buildPrompt(data: ScrapeData): string {
     .join("\n");
   const paragraphs = data.paragraphs.slice(0, 20).join("\n\n");
 
+  let datagouv_section = "";
+  if (data.datagouv?.found) {
+    const d = data.datagouv;
+    datagouv_section = `
+
+DONNÉES OFFICIELLES (API Recherche d'Entreprises — data.gouv.fr) :
+SIREN : ${d.siren}
+SIRET siège : ${d.siret_siege}
+Date de création : ${d.date_creation}
+Forme juridique : ${d.forme_juridique}
+Code NAF : ${d.naf_code} — ${d.naf_libelle}
+Tranche effectif (INSEE) : ${d.effectif}
+Adresse siège : ${d.adresse}${d.dirigeants && d.dirigeants.length > 0 ? `\nDirigeants : ${d.dirigeants.join(", ")}` : ""}${d.certifications && d.certifications.length > 0 ? `\nCertifications : ${d.certifications.join(", ")}` : ""}`;
+  }
+
   return `Tu es un analyste business expert en stratégie produit et marketing B2B.
 
 Voici les données extraites du site web "${data.url}" :
@@ -60,7 +93,7 @@ TITRES DE LA PAGE :
 ${headings}
 
 CONTENU PRINCIPAL :
-${paragraphs}
+${paragraphs}${datagouv_section}
 
 ---
 
