@@ -146,22 +146,22 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="border-b border-black">
+      <header className="sticky top-0 z-50 border-b border-black bg-white">
         <div className="px-8 py-5 border-b border-neutral-200">
           <span className="text-xs font-medium tracking-[0.2em] uppercase">
             Benchmark Tool
           </span>
         </div>
-        <nav className="px-8 flex gap-8">
+        <nav className="flex">
           <a
             href="/"
-            className="py-4 px-2 text-xs font-semibold tracking-[0.15em] uppercase border-b-2 border-black bg-neutral-100 text-black transition-colors"
+            className="flex-1 py-4 px-8 text-xs font-semibold tracking-[0.15em] uppercase border-b-2 border-black bg-black text-white transition-colors text-center"
           >
             Nouveau benchmark
           </a>
           <a
             href="/history"
-            className="py-4 px-2 text-xs font-medium tracking-[0.15em] uppercase border-b-2 border-transparent text-neutral-500 hover:text-black hover:border-neutral-300 transition-colors"
+            className="flex-1 py-4 px-8 text-xs font-medium tracking-[0.15em] uppercase border-b-2 border-transparent text-neutral-500 hover:text-black hover:border-neutral-300 transition-colors text-center"
           >
             Précédents benchmarks
           </a>
