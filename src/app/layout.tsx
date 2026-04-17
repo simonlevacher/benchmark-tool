@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Benchmark Tool",
   description: "Outil d'analyse concurrentielle",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
