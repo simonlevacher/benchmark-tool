@@ -147,7 +147,20 @@ function ReportView({ url, report }: { url: string; report: Report }) {
                     <p className="text-xs text-neutral-400">{fund.year}</p>
                   </div>
                   <p className="text-sm text-neutral-700 mb-1">{fund.amount}</p>
-                  <p className="text-xs text-neutral-500">{fund.investors}</p>
+                  <p className="text-xs text-neutral-500 mb-2">{fund.investors}</p>
+                  {fund.source_url && (
+                    <a
+                      href={fund.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline flex items-center gap-1.5 w-fit"
+                    >
+                      {fund.source || "Source"}
+                      <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </a>
+                  )}
                 </div>
               </div>
             ))}

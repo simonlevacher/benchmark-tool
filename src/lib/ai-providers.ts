@@ -37,7 +37,7 @@ export type Report = {
     funding: string;
     ebitda: string;
     clients: string;
-    funding_history: { year: string; round: string; amount: string; investors: string }[];
+    funding_history: { year: string; round: string; amount: string; investors: string; source?: string; source_url?: string }[];
     revenue_history: { year: string; revenue: number | null; label: string }[];
     siren?: string;
     siret?: string;
@@ -99,7 +99,7 @@ ${paragraphs}${datagouv_section}
 
 Utilise Google Search pour trouver des informations récentes et précises sur cette entreprise :
 - Date de fondation
-- Historique complet de financement : TOUS les tours (Seed, Série A, B, C, D, etc.) avec année, montant exact, et noms des investisseurs principaux, classés chronologiquement du plus ancien au plus récent
+- Historique complet de financement : TOUS les tours (Seed, Série A, B, C, D, etc.) avec année, montant exact, noms des investisseurs principaux, ET URL de la source (article TechCrunch, Crunchbase, communiqué de presse, etc.), classés chronologiquement du plus ancien au plus récent
 - Nombre d'employés
 - EBITDA ou chiffre d'affaires estimé
 - Chiffre d'affaires/revenu annuels des dernières années disponibles
@@ -125,19 +125,25 @@ Réponds UNIQUEMENT avec le JSON brut, sans balises markdown, sans explications.
         "year": "2020",
         "round": "Seed",
         "amount": "1M€",
-        "investors": "Kima Ventures"
+        "investors": "Kima Ventures",
+        "source": "TechCrunch",
+        "source_url": "https://techcrunch.com/..."
       },
       {
         "year": "2021",
         "round": "Série A",
         "amount": "5M€",
-        "investors": "Sequoia Capital, Y Combinator"
+        "investors": "Sequoia Capital, Y Combinator",
+        "source": "Crunchbase",
+        "source_url": "https://crunchbase.com/..."
       },
       {
         "year": "2023",
         "round": "Série B",
         "amount": "25M€",
-        "investors": "Andreessen Horowitz, Bedrock Capital"
+        "investors": "Andreessen Horowitz, Bedrock Capital",
+        "source": "Press Release",
+        "source_url": "https://company.com/press-release/..."
       }
     ],
     "revenue_history": [
