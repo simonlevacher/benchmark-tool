@@ -111,7 +111,9 @@ Utilise Google Search pour trouver des informations récentes et précises sur c
 
 Ensuite, analyse ce site et retourne un objet JSON avec exactement cette structure. Si une information est vraiment introuvable, indique "Non divulgué". Pour les news, retourne uniquement des URLs réelles et vérifiables trouvées via Google Search.
 
-IMPORTANT : Si des DONNÉES OFFICIELLES (data.gouv.fr) sont présentes, extrais-en le SIREN, SIRET, forme juridique, code NAF, et dirigeants pour les inclure dans le JSON.
+IMPORTANT :
+- Si des DONNÉES OFFICIELLES (data.gouv.fr) sont présentes, extrais-en le SIREN, SIRET, forme juridique, code NAF, et dirigeants pour les inclure dans le JSON.
+- Pour les filiales, inclus TOUJOURS le tableau "subsidiaries" (vide [] si aucune trouvée). Pour chaque filiale, inclus le nom, le pourcentage de participation, et le secteur d'activité.
 
 Réponds UNIQUEMENT avec le JSON brut, sans balises markdown, sans explications. Toutes les valeurs textuelles doivent être en français.
 
