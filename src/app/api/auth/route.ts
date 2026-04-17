@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 const attemptStore = new Map<string, { count: number; resetTime: number }>();
 
 const MAX_ATTEMPTS = 5;
-const LOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const LOCK_DURATION_MS = 60 * 1000; // 1 minute
 
 function getClientIp(req: NextRequest): string {
   return (
