@@ -109,6 +109,8 @@ Utilise Google Search pour trouver des informations récentes et précises sur c
 
 Ensuite, analyse ce site et retourne un objet JSON avec exactement cette structure. Si une information est vraiment introuvable, indique "Non divulgué". Pour les news, retourne uniquement des URLs réelles et vérifiables trouvées via Google Search.
 
+IMPORTANT : Si des DONNÉES OFFICIELLES (data.gouv.fr) sont présentes, extrais-en le SIREN, SIRET, forme juridique, code NAF, et dirigeants pour les inclure dans le JSON.
+
 Réponds UNIQUEMENT avec le JSON brut, sans balises markdown, sans explications. Toutes les valeurs textuelles doivent être en français.
 
 {
@@ -157,7 +159,12 @@ Réponds UNIQUEMENT avec le JSON brut, sans balises markdown, sans explications.
         "revenue": 8,
         "label": "8M€"
       }
-    ]
+    ],
+    "siren": "123456789",
+    "siret": "12345678900012",
+    "forme_juridique": "SAS",
+    "naf": "6201Z — Programmation informatique",
+    "dirigeants": ["Jean Dupont (Président)", "Marie Martin (Directrice générale)"]
   },
   "features": [
     {
