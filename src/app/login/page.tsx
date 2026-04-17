@@ -26,7 +26,11 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "Accès refusé.");
+        const errorMessage =
+          res.status === 429
+            ? data.error // Rate limit message is more specific
+            : data.error ?? "Accès refusé.";
+        setError(errorMessage);
         setLoading(false);
         return;
       }
