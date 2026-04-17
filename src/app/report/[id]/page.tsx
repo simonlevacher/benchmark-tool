@@ -128,16 +128,16 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
             Benchmark Tool
           </span>
         </div>
-        <nav className="px-8 flex gap-8">
+        <nav className="flex">
           <a
             href="/"
-            className="py-4 px-2 text-xs font-medium tracking-[0.15em] uppercase border-b-2 border-transparent text-neutral-500 hover:text-black hover:border-neutral-300 transition-colors"
+            className="flex-1 py-4 px-8 text-xs font-medium tracking-[0.15em] uppercase border-b-2 border-transparent text-neutral-500 hover:text-black hover:border-neutral-300 transition-colors text-center"
           >
             Nouveau benchmark
           </a>
           <a
             href="/history"
-            className="py-4 px-2 text-xs font-semibold tracking-[0.15em] uppercase border-b-2 border-black bg-neutral-100 text-black transition-colors"
+            className="flex-1 py-4 px-8 text-xs font-semibold tracking-[0.15em] uppercase border-b-2 border-black bg-black text-white transition-colors text-center"
           >
             Précédents benchmarks
           </a>

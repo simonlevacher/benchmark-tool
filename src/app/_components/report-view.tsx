@@ -101,7 +101,7 @@ export function ReportView({ url, report, saved_id }: { url: string; report: Rep
             Rapport d'analyse
           </p>
           <h2 className="text-3xl font-medium tracking-tight">{company.name}</h2>
-          <p className="text-sm text-neutral-400 font-mono mt-1 break-all">{url}</p>
+          <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline font-mono mt-1 break-all inline-block">{url}</a>
         </div>
       </div>
 
@@ -216,62 +216,61 @@ export function ReportView({ url, report, saved_id }: { url: string; report: Rep
 
       {company.siren && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          <div>
+            <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-6">
+              Données officielles (data.gouv.fr)
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-neutral-200 mb-8">
+              {company.siren && (
+                <div className="bg-white p-6 flex flex-col">
+                  <p className="text-xs text-neutral-400 tracking-widest uppercase mb-2">
+                    SIREN
+                  </p>
+                  <p className="font-mono text-sm font-medium text-neutral-700">{company.siren}</p>
+                </div>
+              )}
+              {company.siret && (
+                <div className="bg-white p-6 flex flex-col">
+                  <p className="text-xs text-neutral-400 tracking-widest uppercase mb-2">
+                    SIRET
+                  </p>
+                  <p className="font-mono text-sm font-medium text-neutral-700">{company.siret}</p>
+                </div>
+              )}
+              {company.forme_juridique && (
+                <div className="bg-white p-6 flex flex-col">
+                  <p className="text-xs text-neutral-400 tracking-widest uppercase mb-2">
+                    Forme juridique
+                  </p>
+                  <p className="text-sm text-neutral-700">{company.forme_juridique}</p>
+                </div>
+              )}
+              {company.naf && (
+                <div className="bg-white p-6 flex flex-col">
+                  <p className="text-xs text-neutral-400 tracking-widest uppercase mb-2">
+                    Activité principale
+                  </p>
+                  <p className="text-sm text-neutral-700">{company.naf}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {company.dirigeants && company.dirigeants.length > 0 && (
             <div>
-              <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-3">
-                Données officielles (data.gouv.fr)
+              <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-6">
+                Dirigeants
               </p>
-              <div className="text-sm text-neutral-700 space-y-2">
-                {company.siren && (
-                  <div>
-                    <p className="text-xs text-neutral-400 tracking-widest uppercase mb-0.5">
-                      SIREN
-                    </p>
-                    <p className="font-mono">{company.siren}</p>
+              <div className="space-y-2 mb-8">
+                {company.dirigeants.map((d, i) => (
+                  <div key={i} className="flex gap-3 p-3 bg-neutral-50 border border-neutral-200">
+                    <span className="w-1 h-1 rounded-full bg-black mt-2 shrink-0" />
+                    <p className="text-sm text-neutral-700">{d}</p>
                   </div>
-                )}
-                {company.siret && (
-                  <div>
-                    <p className="text-xs text-neutral-400 tracking-widest uppercase mb-0.5">
-                      SIRET
-                    </p>
-                    <p className="font-mono">{company.siret}</p>
-                  </div>
-                )}
-                {company.forme_juridique && (
-                  <div>
-                    <p className="text-xs text-neutral-400 tracking-widest uppercase mb-0.5">
-                      Forme juridique
-                    </p>
-                    <p>{company.forme_juridique}</p>
-                  </div>
-                )}
-                {company.naf && (
-                  <div>
-                    <p className="text-xs text-neutral-400 tracking-widest uppercase mb-0.5">
-                      Activité principale
-                    </p>
-                    <p>{company.naf}</p>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
-            {company.dirigeants && company.dirigeants.length > 0 && (
-              <div>
-                <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-3">
-                  Dirigeants
-                </p>
-                <ul className="flex flex-col gap-2 text-sm text-neutral-700">
-                  {company.dirigeants.map((d, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="mt-1 w-1 h-1 rounded-full bg-black shrink-0" />
-                      {d}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+          )}
 
           <div className="w-full h-px bg-neutral-200" />
         </>
