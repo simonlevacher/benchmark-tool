@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { ReportView, type Report } from "@/app/_components/report-view";
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
@@ -9,6 +10,9 @@ export default function Home() {
   type StepStatus = "pending" | "active" | "done" | "error";
   type Step = { id: string; message: string; status: StepStatus };
 
+  const router = useRouter();
+  const skipDuplicateCheck = useRef(false);
+
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [steps, setSteps] = useState<Step[]>([]);
@@ -16,6 +20,7 @@ export default function Home() {
   const [result, setResult] = useState<{ url: string; report: Report } | null>(null);
   const [searchCount, setSearchCount] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
+  const [existingReport, setExistingReport] = useState<{ id: number; company_name: string } | null>(null);
 
   function upsertStep(id: string, status: StepStatus, message: string) {
     setSteps((prev) => {
@@ -35,6 +40,23 @@ export default function Home() {
     setError(null);
     setResult(null);
     setSteps([]);
+
+    // Vérifier si l'URL a déjà été analysée
+    if (!skipDuplicateCheck.current) {
+      try {
+        const checkRes = await fetch(`/api/reports?url=${encodeURIComponent(trimmedUrl)}`);
+        const checkData = await checkRes.json();
+        if (checkData.results?.length > 0) {
+          setExistingReport(checkData.results[0]);
+          setLoading(false);
+          return;
+        }
+      } catch {
+        // Silencieusement ignorer les erreurs de vérification
+      }
+    }
+    skipDuplicateCheck.current = false;
+
     setSearchCount((c) => c + 1);
 
     try {
@@ -149,7 +171,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 border-b border-black bg-white">
         <div className="px-8 py-5 border-b border-neutral-200">
           <span className="text-xs font-medium tracking-[0.2em] uppercase">
-            Benchmark Tool
+            Benchmark Tool by Hellowork
           </span>
         </div>
         <nav className="flex">
@@ -196,6 +218,7 @@ export default function Home() {
                 onChange={(e) => {
                   setUrl(e.target.value);
                   setError(null);
+                  setExistingReport(null);
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder="https://exemple.com"
@@ -220,6 +243,31 @@ export default function Home() {
               </p>
             )}
           </div>
+
+          {existingReport && (
+            <div className="mt-4 p-4 bg-neutral-100 border border-neutral-300 flex items-center justify-between">
+              <p className="text-sm text-neutral-700">
+                Vous avez déjà analysé <span className="font-semibold">{existingReport.company_name}</span>
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => router.push(`/report/${existingReport.id}`)}
+                  className="text-xs font-medium tracking-[0.15em] uppercase px-4 py-2 bg-black text-white hover:bg-neutral-800 transition-colors"
+                >
+                  Voir l'analyse
+                </button>
+                <button
+                  onClick={() => {
+                    skipDuplicateCheck.current = true;
+                    handleAnalyze();
+                  }}
+                  className="text-xs font-medium tracking-[0.15em] uppercase px-4 py-2 border border-black text-black hover:bg-black hover:text-white transition-colors"
+                >
+                  Relancer quand même
+                </button>
+              </div>
+            </div>
+          )}
 
           {toast && (
             <div className="mt-8 p-3 bg-neutral-100 border border-neutral-300 text-sm text-neutral-700 rounded flex items-center gap-2">

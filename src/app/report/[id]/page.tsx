@@ -49,7 +49,7 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
         <header className="sticky top-0 z-50 border-b border-black bg-white">
           <div className="px-8 py-5 border-b border-neutral-200">
             <span className="text-xs font-medium tracking-[0.2em] uppercase">
-              Benchmark Tool
+              Benchmark Tool by Hellowork
             </span>
           </div>
           <nav className="flex">
@@ -87,7 +87,7 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
         <header className="sticky top-0 z-50 border-b border-black bg-white">
           <div className="px-8 py-5 border-b border-neutral-200">
             <span className="text-xs font-medium tracking-[0.2em] uppercase">
-              Benchmark Tool
+              Benchmark Tool by Hellowork
             </span>
           </div>
           <nav className="flex">

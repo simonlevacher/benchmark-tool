@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { reports } from "@/lib/db/schema";
-import { desc, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,6 +13,17 @@ export async function GET(req: NextRequest) {
         },
         { status: 200 }
       );
+    }
+
+    const urlParam = req.nextUrl.searchParams.get("url");
+
+    if (urlParam) {
+      const existing = await db
+        .select({ id: reports.id, company_name: reports.company_name })
+        .from(reports)
+        .where(eq(reports.url, urlParam))
+        .limit(1);
+      return NextResponse.json({ results: existing }, { status: 200 });
     }
 
     const allReports = await db
