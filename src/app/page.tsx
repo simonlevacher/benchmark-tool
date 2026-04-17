@@ -67,6 +67,7 @@ type Report = {
     clients: string;
     funding_history: { year: string; round: string; amount: string; investors: string; source?: string; source_url?: string }[];
     revenue_history: { year: string; revenue: number | null; label: string }[];
+    subsidiaries: { name: string; stake?: string; sector?: string }[];
     siren?: string;
     siret?: string;
     dirigeants?: string[];
@@ -165,6 +166,36 @@ function ReportView({ url, report }: { url: string; report: Report }) {
                         <path d="M2 10L10 2M10 2H4M10 2V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-neutral-400">Pas d'information disponible</p>
+        )}
+      </div>
+
+      <div className="w-full h-px bg-neutral-200" />
+
+      <div>
+        <p className="text-xs font-medium tracking-[0.15em] uppercase text-neutral-500 mb-6">
+          Filiales et participations
+        </p>
+        {company.subsidiaries.length > 0 ? (
+          <div className="space-y-3">
+            {company.subsidiaries.map((sub, i) => (
+              <div key={i} className="flex items-start gap-4 p-3 bg-neutral-50 border border-neutral-200">
+                <span className="w-1 h-1 rounded-full bg-black mt-2 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2 mb-0.5">
+                    <p className="text-sm font-medium">{sub.name}</p>
+                    {sub.stake && (
+                      <p className="text-xs text-neutral-400">{sub.stake}</p>
+                    )}
+                  </div>
+                  {sub.sector && (
+                    <p className="text-xs text-neutral-500">{sub.sector}</p>
                   )}
                 </div>
               </div>

@@ -39,6 +39,7 @@ export type Report = {
     clients: string;
     funding_history: { year: string; round: string; amount: string; investors: string; source?: string; source_url?: string }[];
     revenue_history: { year: string; revenue: number | null; label: string }[];
+    subsidiaries: { name: string; stake?: string; sector?: string }[];
     siren?: string;
     siret?: string;
     dirigeants?: string[];
@@ -104,6 +105,7 @@ Utilise Google Search pour trouver des informations récentes et précises sur c
 - EBITDA ou chiffre d'affaires estimé
 - Chiffre d'affaires/revenu annuels des dernières années disponibles
 - Nombre de clients
+- Filiales et participations (si applicable) : nom de la filiale, pourcentage de participation, secteur d'activité
 - Actualités récentes (articles de presse, annonces, levées de fonds, partenariats, lancements produit des 12 derniers mois avec leurs URLs)
 - Positionnement concurrentiel
 
@@ -158,6 +160,18 @@ Réponds UNIQUEMENT avec le JSON brut, sans balises markdown, sans explications.
         "year": "2023",
         "revenue": 8,
         "label": "8M€"
+      }
+    ],
+    "subsidiaries": [
+      {
+        "name": "TechStartup SAS",
+        "stake": "100%",
+        "sector": "Logiciels"
+      },
+      {
+        "name": "Innovation Labs Inc",
+        "stake": "75%",
+        "sector": "Recherche & Développement"
       }
     ],
     "siren": "123456789",
