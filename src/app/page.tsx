@@ -350,7 +350,7 @@ export default function Home() {
 
       const scrapeData = await scrapeRes.json();
 
-      if (!scrapeRes.ok) {
+      if (!scrapeRes.ok || !scrapeData.url) {
         upsertStep("scraping", "error", scrapeData.error ?? "Échec de la récupération.");
         setError(scrapeData.error ?? "Échec de la récupération du site.");
         return;
@@ -368,6 +368,8 @@ export default function Home() {
       });
 
       const analyzeData = await analyzeRes.json();
+
+      console.log("Analyze response:", { status: analyzeRes.status, ok: analyzeRes.ok, data: analyzeData });
 
       if (!analyzeRes.ok) {
         upsertStep("analyzing", "error", analyzeData.error ?? "Échec de l'analyse.");
