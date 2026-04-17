@@ -65,8 +65,13 @@ type Report = {
     funding: string;
     ebitda: string;
     clients: string;
-    funding_history: { year: string; round: string; amount: string; investors: string }[];
+    funding_history: { year: string; round: string; amount: string; investors: string; source?: string; source_url?: string }[];
     revenue_history: { year: string; revenue: number | null; label: string }[];
+    siren?: string;
+    siret?: string;
+    dirigeants?: string[];
+    forme_juridique?: string;
+    naf?: string;
   };
   features: Feature[];
   analysis: {
