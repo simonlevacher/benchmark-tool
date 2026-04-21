@@ -214,18 +214,33 @@ export async function analyzeWithGemini(data: ScrapeData): Promise<Report> {
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tools: [{ googleSearch: {} } as any],
   });
 
-  const result = await model.generateContent(buildPrompt(data));
-  const text = result.response.text().trim();
+  const maxRetries = 4;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const result = await model.generateContent(buildPrompt(data));
+      const text = result.response.text().trim();
+      const clean = text.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "").trim();
+      return JSON.parse(clean) as Report;
+    } catch (err: unknown) {
+      const is429 =
+        err instanceof Error &&
+        (err.message.includes("429") || err.message.toLowerCase().includes("resource exhausted"));
 
-  // Strip possible markdown code fences
-  const clean = text.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "").trim();
+      if (is429 && attempt < maxRetries - 1) {
+        const delay = Math.pow(2, attempt) * 5000; // 5s, 10s, 20s
+        await new Promise((r) => setTimeout(r, delay));
+      } else {
+        throw err;
+      }
+    }
+  }
 
-  return JSON.parse(clean) as Report;
+  throw new Error("Gemini: nombre maximum de tentatives atteint.");
 }
 
 // ─── Claude (à brancher plus tard) ───────────────────────────────────────────
