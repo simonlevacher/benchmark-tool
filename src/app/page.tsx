@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ReportView, type Report } from "@/app/_components/report-view";
 import { RobotFall } from "@/app/_components/robot-fall";
 
@@ -12,6 +12,7 @@ export default function Home() {
   type Step = { id: string; message: string; status: StepStatus };
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const skipDuplicateCheck = useRef(false);
 
   const [url, setUrl] = useState("");
@@ -24,13 +25,12 @@ export default function Home() {
   const [existingReport, setExistingReport] = useState<{ id: number; company_name: string } | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const urlParam = params.get("url");
+    const urlParam = searchParams.get("url");
     if (urlParam) {
       setUrl(urlParam);
       handleAnalyze(urlParam);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps — intentional single-fire on mount
   }, []);
 
   function upsertStep(id: string, status: StepStatus, message: string) {
