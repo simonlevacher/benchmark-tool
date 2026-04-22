@@ -3,6 +3,38 @@ import * as cheerio from "cheerio";
 
 export const dynamic = "force-dynamic";
 
+export const maxDuration = 60;
+
+function isCloudflareBlock(response: Response): boolean {
+  return response.status === 403 && response.headers.get("cf-mitigated") === "challenge";
+}
+
+async function scrapeWithPlaywright(url: string): Promise<string> {
+  const { chromium } = await import("playwright-core");
+
+  let executablePath: string | undefined;
+  let args: string[] = [];
+
+  if (process.env.VERCEL === "1") {
+    const chromiumLib = await import("@sparticuz/chromium");
+    executablePath = await chromiumLib.default.executablePath();
+    args = chromiumLib.default.args;
+  } else {
+    executablePath =
+      process.env.CHROMIUM_EXECUTABLE_PATH ??
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+  }
+
+  const browser = await chromium.launch({ executablePath, args, headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 25_000 });
+    return await page.content();
+  } finally {
+    await browser.close();
+  }
+}
+
 export async function POST(req: NextRequest) {
   let body: { url?: string };
 
@@ -28,7 +60,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "URL invalide." }, { status: 422 });
   }
 
-  let html: string;
+  let html!: string;
   try {
     const response = await fetch(parsedUrl.toString(), {
       headers: {
@@ -44,14 +76,23 @@ export async function POST(req: NextRequest) {
       signal: AbortSignal.timeout(10_000),
     });
 
-    if (!response.ok) {
+    if (isCloudflareBlock(response)) {
+      try {
+        html = await scrapeWithPlaywright(parsedUrl.toString());
+      } catch {
+        return NextResponse.json(
+          { error: "Ce site est protégé par Cloudflare et n'a pas pu être analysé automatiquement." },
+          { status: 502 }
+        );
+      }
+    } else if (!response.ok) {
       return NextResponse.json(
         { error: `Le site a répondu avec le statut ${response.status}.` },
         { status: 502 }
       );
+    } else {
+      html = await response.text();
     }
-
-    html = await response.text();
   } catch (err) {
     const message =
       err instanceof Error && err.name === "TimeoutError"
