@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ReportView, type Report } from "@/app/_components/report-view";
+import { RobotFall } from "@/app/_components/robot-fall";
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 
@@ -234,9 +235,14 @@ export default function Home() {
                 {loading ? "Analyse…" : "Analyser"}
               </button>
             </div>
-            {error && (
+            {error && error.includes("Cloudflare") ? (
+              <div className="flex items-center gap-4 mt-1">
+                <RobotFall />
+                <p className="text-xs text-red-500 tracking-wide leading-relaxed">{error}</p>
+              </div>
+            ) : error ? (
               <p className="text-xs text-red-500 tracking-wide">{error}</p>
-            )}
+            ) : null}
             {!error && (
               <p className="text-xs text-neutral-400">
                 Formats acceptés — https://domaine.com · https://www.domaine.com

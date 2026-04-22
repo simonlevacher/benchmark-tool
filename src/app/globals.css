@@ -24,3 +24,21 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes robot-fall {
+  0%   { transform: rotate(0deg); }
+  70%  { transform: rotate(90deg); }
+  82%  { transform: rotate(83deg); }
+  92%  { transform: rotate(88deg); }
+  100% { transform: rotate(86deg); }
+}
+
+@keyframes eyes-normal {
+  0%, 69%  { opacity: 1; }
+  70%, 100% { opacity: 0; }
+}
+
+@keyframes eyes-dead {
+  0%, 69%  { opacity: 0; }
+  70%, 100% { opacity: 1; }
+}
