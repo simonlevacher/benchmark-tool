@@ -9,6 +9,10 @@ function isCloudflareBlock(response: Response): boolean {
   return response.status === 403 && response.headers.get("cf-mitigated") === "challenge";
 }
 
+function isCloudflareChallengeHtml(html: string): boolean {
+  return html.includes("<title>Just a moment...</title>");
+}
+
 async function scrapeWithPlaywright(url: string): Promise<string> {
   const { chromium } = await import("playwright-core");
 
@@ -79,6 +83,12 @@ export async function POST(req: NextRequest) {
     if (isCloudflareBlock(response)) {
       try {
         html = await scrapeWithPlaywright(parsedUrl.toString());
+        if (isCloudflareChallengeHtml(html)) {
+          return NextResponse.json(
+            { error: "Ce site est protégé par Cloudflare et n'a pas pu être analysé automatiquement." },
+            { status: 502 }
+          );
+        }
       } catch {
         return NextResponse.json(
           { error: "Ce site est protégé par Cloudflare et n'a pas pu être analysé automatiquement." },
@@ -92,6 +102,22 @@ export async function POST(req: NextRequest) {
       );
     } else {
       html = await response.text();
+      if (isCloudflareChallengeHtml(html)) {
+        try {
+          html = await scrapeWithPlaywright(parsedUrl.toString());
+          if (isCloudflareChallengeHtml(html)) {
+            return NextResponse.json(
+              { error: "Ce site est protégé par Cloudflare et n'a pas pu être analysé automatiquement." },
+              { status: 502 }
+            );
+          }
+        } catch {
+          return NextResponse.json(
+            { error: "Ce site est protégé par Cloudflare et n'a pas pu être analysé automatiquement." },
+            { status: 502 }
+          );
+        }
+      }
     }
   } catch (err) {
     const message =
