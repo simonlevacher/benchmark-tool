@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 type SearchResult = {
   name: string;
   url: string;
+  description?: string;
   source: "ia" | "web";
 };
 
@@ -165,7 +166,10 @@ export default function RecherchePage() {
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium mb-1">{item.name}</p>
-                        <p className="text-xs font-mono text-neutral-500 truncate">{item.url}</p>
+                        {item.description && (
+                          <p className="text-xs text-neutral-500 mb-1 leading-relaxed">{item.description}</p>
+                        )}
+                        <p className="text-xs font-mono text-neutral-400 truncate">{item.url}</p>
                       </div>
                       <span
                         className={`text-[10px] font-medium tracking-[0.12em] uppercase px-2 py-0.5 flex-shrink-0 ${

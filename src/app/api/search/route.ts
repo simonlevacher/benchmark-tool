@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 type SearchResult = {
   name: string;
   url: string;
+  description?: string;
   source: "ia" | "web";
 };
 
@@ -19,9 +20,9 @@ type SearchResponse = {
 
 function buildSearchPrompt(query: string): string {
   return `Liste 5 entreprises réelles correspondant à : "${query}".
-Pour chaque entreprise, donne le nom officiel et l'URL du site officiel.
+Pour chaque entreprise, donne le nom officiel, l'URL du site officiel et une courte description (1 phrase max, en français).
 Réponds UNIQUEMENT avec un tableau JSON valide, sans markdown, sans explication :
-[{"name":"Nom Entreprise","url":"https://site-officiel.com"},...]`;
+[{"name":"Nom Entreprise","url":"https://site-officiel.com","description":"Description courte."},...]`;
 }
 
 async function callGemini(query: string, withGrounding: boolean): Promise<SearchResult[]> {
@@ -43,7 +44,7 @@ async function callGemini(query: string, withGrounding: boolean): Promise<Search
       const clean = text.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "").trim();
       const jsonMatch = clean.match(/\[[\s\S]*\]/);
       if (!jsonMatch) throw new Error("Gemini n'a pas retourné de JSON valide.");
-      const parsed = JSON.parse(jsonMatch[0]) as { name: string; url: string }[];
+      const parsed = JSON.parse(jsonMatch[0]) as { name: string; url: string; description?: string }[];
       const source: "ia" | "web" = withGrounding ? "web" : "ia";
       return parsed.map((item) => ({ ...item, source }));
     } catch (err: unknown) {
