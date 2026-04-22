@@ -35,12 +35,32 @@ async function callGemini(query: string, withGrounding: boolean): Promise<Search
     ...(withGrounding ? { tools: [{ googleSearch: {} } as any] } : {}),
   });
 
-  const result = await model.generateContent(buildSearchPrompt(query));
-  const text = result.response.text().trim();
-  const clean = text.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "").trim();
-  const parsed = JSON.parse(clean) as { name: string; url: string }[];
-  const source: "ia" | "web" = withGrounding ? "web" : "ia";
-  return parsed.map((item) => ({ ...item, source }));
+  const maxRetries = 4;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const result = await model.generateContent(buildSearchPrompt(query));
+      const text = result.response.text().trim();
+      const clean = text.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "").trim();
+      const jsonMatch = clean.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) throw new Error("Gemini n'a pas retourné de JSON valide.");
+      const parsed = JSON.parse(jsonMatch[0]) as { name: string; url: string }[];
+      const source: "ia" | "web" = withGrounding ? "web" : "ia";
+      return parsed.map((item) => ({ ...item, source }));
+    } catch (err: unknown) {
+      const is429 =
+        err instanceof Error &&
+        (err.message.includes("429") || err.message.toLowerCase().includes("resource exhausted"));
+
+      if (is429 && attempt < maxRetries - 1) {
+        const delay = Math.pow(2, attempt) * 5000; // 5s, 10s, 20s
+        await new Promise((r) => setTimeout(r, delay));
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  throw new Error("Gemini: nombre maximum de tentatives atteint.");
 }
 
 function dedup(results: SearchResult[]): SearchResult[] {
@@ -69,6 +89,9 @@ export async function POST(req: NextRequest) {
   const { query } = body;
   if (!query || typeof query !== "string" || !query.trim()) {
     return NextResponse.json({ error: "Champ 'query' manquant." }, { status: 400 });
+  }
+  if (query.trim().length > 200) {
+    return NextResponse.json({ error: "La requête ne peut pas dépasser 200 caractères." }, { status: 400 });
   }
 
   const [knowledgeResult, searchResult] = await Promise.allSettled([
