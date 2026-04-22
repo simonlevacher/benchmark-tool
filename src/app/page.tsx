@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ReportView, type Report } from "@/app/_components/report-view";
 import { RobotFall } from "@/app/_components/robot-fall";
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 
-export default function Home() {
+function HomeContent() {
   type StepStatus = "pending" | "active" | "done" | "error";
   type Step = { id: string; message: string; status: StepStatus };
 
@@ -348,5 +348,13 @@ export default function Home() {
         </p>
       </footer>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense>
+      <HomeContent />
+    </Suspense>
   );
 }
