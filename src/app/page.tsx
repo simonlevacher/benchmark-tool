@@ -23,6 +23,16 @@ export default function Home() {
   const [toast, setToast] = useState<string | null>(null);
   const [existingReport, setExistingReport] = useState<{ id: number; company_name: string } | null>(null);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlParam = params.get("url");
+    if (urlParam) {
+      setUrl(urlParam);
+      handleAnalyze(urlParam);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function upsertStep(id: string, status: StepStatus, message: string) {
     setSteps((prev) => {
       const idx = prev.findIndex((s) => s.id === id);
@@ -33,10 +43,9 @@ export default function Home() {
     });
   }
 
-  async function handleAnalyze() {
-    if (!url.trim() || loading) return;
-
-    const trimmedUrl = url.trim();
+  async function handleAnalyze(overrideUrl?: string) {
+    const trimmedUrl = (overrideUrl ?? url).trim();
+    if (!trimmedUrl || loading) return;
     setLoading(true);
     setError(null);
     setResult(null);
@@ -234,7 +243,7 @@ export default function Home() {
               />
               <button
                 type="button"
-                onClick={handleAnalyze}
+                onClick={() => handleAnalyze()}
                 disabled={!url.trim() || loading}
                 className="bg-black text-white text-xs font-medium tracking-[0.2em] uppercase px-7 py-3.5 hover:bg-neutral-800 transition-colors disabled:bg-neutral-300 disabled:cursor-not-allowed whitespace-nowrap"
               >
