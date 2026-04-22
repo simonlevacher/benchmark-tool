@@ -95,6 +95,12 @@ export default function HistoryPage() {
             Nouveau benchmark
           </a>
           <a
+            href="/recherche"
+            className="flex-1 py-4 px-8 text-xs font-medium tracking-[0.15em] uppercase border-b-2 border-transparent text-neutral-500 hover:text-black hover:border-neutral-300 transition-colors text-center"
+          >
+            Recherche
+          </a>
+          <a
             href="/history"
             className="flex-1 py-4 px-8 text-xs font-semibold tracking-[0.15em] uppercase border-b-2 border-black bg-black text-white transition-colors text-center"
           >
