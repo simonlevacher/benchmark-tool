@@ -3,7 +3,7 @@ export function RobotFall() {
     <div
       style={{
         animation: "robot-fall 0.9s cubic-bezier(0.4, 0, 1, 1) 0.4s both",
-        transformOrigin: "bottom left",
+        transformOrigin: "center",
         display: "inline-block",
       }}
     >

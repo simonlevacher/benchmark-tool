@@ -236,9 +236,9 @@ export default function Home() {
               </button>
             </div>
             {error && error.includes("Cloudflare") ? (
-              <div className="flex items-center gap-4 mt-1">
+              <div className="flex flex-col items-center gap-3 mt-1">
+                <p className="text-xs text-red-500 tracking-wide leading-relaxed text-center">{error}</p>
                 <RobotFall />
-                <p className="text-xs text-red-500 tracking-wide leading-relaxed">{error}</p>
               </div>
             ) : error ? (
               <p className="text-xs text-red-500 tracking-wide">{error}</p>
